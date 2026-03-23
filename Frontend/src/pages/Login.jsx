@@ -6,14 +6,45 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
-    // No backend yet – UI-only
-    if (username && password) {
-      navigate("/dashboard");
-    } else {
-      alert("Please enter username and password");
+
+
+  const handleLogin = async () => {
+  if (!username || !password) {
+    alert("Please enter username and password");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.detail);
+      return;
     }
-  };
+
+    
+    localStorage.setItem("token", data.access_token);
+    localStorage.setItem("username", username);
+
+    alert("Login successful!");
+    navigate("/dashboard");
+
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("Something went wrong");
+  }
+};
 
   return (
     <div style={styles.container}>
