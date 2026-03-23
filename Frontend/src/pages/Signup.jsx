@@ -6,13 +6,39 @@ export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSignup = () => {
-    if (username && password) {
-      navigate("/login");
-    } else {
-      alert("Please fill all fields");
+  const handleSignup = async () => {
+  if (!username || !password) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.detail);
+      return;
     }
-  };
+
+    alert("Signup successful!");
+    navigate("/login");
+
+  } catch (error) {
+    console.error("Signup error:", error);
+    alert("Something went wrong");
+  }
+};
 
   return (
     <div style={styles.container}>
