@@ -8,6 +8,8 @@ export default function Dashboard() {
 
   const [cameraOpen, setCameraOpen] = useState(false);
   const [bodyVisible, setBodyVisible] = useState(false);
+  const [cameraMode, setCameraMode] = useState("idle");
+  const [isExercising, setIsExercising] = useState(false);
 
 //   useEffect(() => {
 //   if (!cameraOpen) return;
@@ -39,10 +41,32 @@ export default function Dashboard() {
             <button
               style={styles.primaryBtn}
               onClick={async () => {
-                await fetch("http://localhost:8000/start-calibration", { method: "POST" });
+                const token = localStorage.getItem("token");
+
+                if (!token) {
+                  alert("Please login first");
+                  return;
+                }
+
+              
+                await fetch("http://localhost:8000/set-token", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    token: token,
+                  }),
+                });
+
+                await fetch("http://localhost:8000/start-calibration", {
+                  method: "POST",
+                });
+
                 setCameraOpen(true);
+                setCameraMode("calibration");
               }}
-            >
+                          >
               Start Calibration
             </button>
 
@@ -58,6 +82,7 @@ export default function Dashboard() {
               onClick={async () => {
                 await fetch("http://localhost:8000/start-exercise", { method: "POST" });
                 setCameraOpen(true);
+                setCameraMode("exercise");
               }}
             >
               Squats
@@ -79,6 +104,7 @@ export default function Dashboard() {
   <>
     <div style={styles.cameraFeedWrapper}>
       <img
+        key={cameraOpen}
         src="http://localhost:8000/video-feed"
         alt="Camera Feed"
         style={styles.cameraFeed}
@@ -102,14 +128,23 @@ export default function Dashboard() {
     
 
     <button
+      
       style={styles.closeCameraBtn}
-      onClick={() => setCameraOpen(false)}
-      // onClick={ async () => {
-      //   await fetch("http://localhost:8000/stop-camera", { method: "POST" });
-      //   setCameraOpen(false);
-      // }}
+      onClick={async () => {
+        await fetch("http://localhost:8000/stop-camera", { method: "POST" });
+        setCameraOpen(false);
+        setIsExercising(false); 
+        setCameraMode("idle");
+        window.location.reload();
+        // setTimeout(() => setCameraOpen(true), 200);
+      }}
     >
-      Close Camera
+      {cameraMode === "calibration"
+    ? "Stop Calibration"
+    : cameraMode === "exercise"
+    ? "Stop Exercising"
+    : "Close Camera"}
+
     </button>
   </>
 ) : (
