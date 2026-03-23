@@ -1,4 +1,35 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+
+
+
 export default function Navbar() {
+
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+      // Optional: call backend logout
+      await fetch("http://localhost:8000/logout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+      console.log("Logout API failed (not critical)", err);
+    }
+
+    // Clear frontend session
+    localStorage.removeItem("token");
+
+    // Redirect to login page
+    navigate("/login");
+  };
+
+
+
   return (
     <div style={styles.nav}>
        <img src="/postura-logo.png" alt="POSTURA" style={styles.pict} />
@@ -8,6 +39,9 @@ export default function Navbar() {
         {/* <span>Dashboard</span> */}
         <span>Calibration</span>
         <span>Exercises</span>
+        <span style={styles.logout} onClick={handleLogout}>
+          Logout
+        </span>
       </div>
     </div>
   );
@@ -40,5 +74,11 @@ const styles = {
     gap: "30px",
     cursor: "pointer",
     fontWeight: "500",
+  },
+
+  logout: {
+    cursor: "pointer",
+    color: "#ff4d4d",
+    fontWeight: "bold",
   },
 };
